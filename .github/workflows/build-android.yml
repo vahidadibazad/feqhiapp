@@ -45,7 +45,6 @@ jobs:
           echo "Patching: $CORDOVA_JS"
           sed -i "s|process\.exitCode = err\.code|process.exitCode = 1|g" "$CORDOVA_JS"
           sed -i "s|process\.exitCode = error\.code|process.exitCode = 1|g" "$CORDOVA_JS"
-          grep -n "exitCode" "$CORDOVA_JS" || true
 
       - name: Generate app icons and splash
         run: |
@@ -60,9 +59,24 @@ jobs:
           rm -rf platforms android plugins/android.json
           echo "Cleaned"
 
-      - name: Add Android platform (full package name)
+      - name: Add Android platform (stable version)
         run: |
-          cordova platform add cordova-android@13.0.0 --nosave
+          cordova platform add cordova-android@12.0.0 --nosave
+
+      - name: Ensure cdv_strings.xml exists
+        run: |
+          VALUES_DIR="platforms/android/app/src/main/res/values"
+          mkdir -p "$VALUES_DIR"
+          if [ ! -f "$VALUES_DIR/cdv_strings.xml" ]; then
+            echo "Creating cdv_strings.xml manually..."
+            cat > "$VALUES_DIR/cdv_strings.xml" << 'EOF'
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+</resources>
+EOF
+          fi
+          echo "=== cdv_strings.xml ==="
+          cat "$VALUES_DIR/cdv_strings.xml"
 
       - name: Prepare Cordova platform
         run: |
@@ -72,10 +86,8 @@ jobs:
         run: |
           echo "=== platform list ==="
           cordova platform list
-          echo "=== cdv_strings.xml ==="
-          find platforms/android -name "cdv_strings.xml" 2>/dev/null || echo "not found"
-          echo "=== res/values dir ==="
-          ls -la platforms/android/app/src/main/res/values/ 2>/dev/null || echo "missing"
+          echo "=== values dir ==="
+          ls -la platforms/android/app/src/main/res/values/
 
       - name: Build APK (Debug)
         run: |
