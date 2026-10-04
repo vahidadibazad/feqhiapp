@@ -47,9 +47,15 @@ jobs:
         run: |
           npm run build
 
-      - name: Add Android platform
+      - name: Install Cordova Android platform
         run: |
-          npx cordova platform add android
+          npm install cordova-android@latest --save-dev
+          npx cordova platform add android --nosave
+
+      - name: Verify platform added
+        run: |
+          npx cordova platform list
+          ls -la platforms/android/ | head -20
 
       - name: Build APK (Debug)
         run: |
