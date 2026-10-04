@@ -46,12 +46,9 @@ jobs:
           ls -la www/
           echo "=== Contents of www/assets/ ==="
           ls -la www/assets/ || echo "assets folder missing"
-          echo "=== Checking env.json ==="
-          head -30 www/assets/env.json
 
       - name: Ensure env.json has default_lang=en
         run: |
-          # تغییر default_lang به en برای جلوگیری از خطای fa.json
           sed -i 's/"default_lang": "fa"/"default_lang": "en"/' www/assets/env.json
           sed -i 's/"forcedefaultlanguage": true/"forcedefaultlanguage": false/' www/assets/env.json
           echo "=== Final env.json ==="
