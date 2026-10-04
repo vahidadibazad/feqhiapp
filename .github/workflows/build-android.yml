@@ -59,7 +59,7 @@ jobs:
           rm -rf platforms android plugins/android.json
           echo "Cleaned"
 
-      - name: Add Android platform (stable version)
+      - name: Add Android platform
         run: |
           cordova platform add cordova-android@12.0.0 --nosave
 
@@ -69,11 +69,7 @@ jobs:
           mkdir -p "$VALUES_DIR"
           if [ ! -f "$VALUES_DIR/cdv_strings.xml" ]; then
             echo "Creating cdv_strings.xml manually..."
-            cat > "$VALUES_DIR/cdv_strings.xml" << 'EOF'
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-</resources>
-EOF
+            printf "<?xml version='1.0' encoding='utf-8'?>\n<resources>\n</resources>\n" > "$VALUES_DIR/cdv_strings.xml"
           fi
           echo "=== cdv_strings.xml ==="
           cat "$VALUES_DIR/cdv_strings.xml"
