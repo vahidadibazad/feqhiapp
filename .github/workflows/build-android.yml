@@ -1,0 +1,60 @@
+name: Build APK
+
+on:
+  push:
+    branches:
+      - my-branding
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install
+        run: |
+          npm ci
+          npm install -g cordova@12.0.0 @ionic/cli
+
+      - name: Patch Cordova for Node 24
+        run: |
+          CORDOVA_JS="$(npm root -g)/cordova/bin/cordova"
+          sed -i "s|process\.exitCode = err\.code|process.exitCode = 1|g" "$CORDOVA_JS" || true
+
+      - name: Build web
+        run: npm run build
+
+      - name: Add platform via Ionic
+        run: |
+          npx ionic cordova platform add android --no-save
+
+      - name: Build via Ionic
+        run: |
+          npx ionic cordova build android --debug --no-telemetry
+
+      - name: Find APK
+        run: find . -name "*.apk" -type f
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: platforms/android/app/build/outputs/apk/debug/*.apk
+          tag_name: build-${{ github.run_number }}
+          name: Build ${{ github.run_number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
