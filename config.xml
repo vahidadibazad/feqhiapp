@@ -51,7 +51,7 @@
     <preference name="CustomURLSchemePluginClearsAndroidIntent" value="true" />
     <preference name="deployment-target" value="15.0" />
     <preference name="iosPersistentFileLocation" value="Compatibility" />
-    <preference name="scheme" value="https" />
+    <preference name="scheme" value="http" />
     <preference name="iosScheme" value="feqhiappfs" />
     <preference name="WKWebViewOnly" value="true" />
     <preference name="WKFullScreenEnabled" value="true" />
