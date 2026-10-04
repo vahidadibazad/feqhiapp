@@ -21,7 +21,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
+          cache: 'npm'
 
       - name: Setup Java JDK 17
         uses: actions/setup-java@v4
@@ -35,8 +36,25 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci --ignore-engines --legacy-peer-deps || npm install --ignore-engines --legacy-peer-deps
+          npm ci
           npm install -g cordova@12.0.0 ionic cordova-res
+
+      - name: Patch Cordova for Node 24 compatibility
+        run: |
+          CORDOVA_BIN=$(which cordova)
+          echo "Cordova bin path: $CORDOVA_BIN"
+          CORDOVA_JS=$(dirname $(readlink -f $CORDOVA_BIN))/../lib/node_modules/cordova/bin/cordova
+          echo "Cordova JS path: $CORDOVA_JS"
+          ls -la $CORDOVA_JS
+          # نمایش خطوط مشکل‌دار
+          sed -n '25,40p' $CORDOVA_JS
+          # پچ: تبدیل process.exitCode = err.code به process.exitCode = 1
+          sed -i 's/process\.exitCode = err\.code/process.exitCode = 1/g' $CORDOVA_JS
+          # پچ جایگزین برای الگوهای دیگر
+          sed -i 's/process\.exitCode = error\.code/process.exitCode = 1/g' $CORDOVA_JS
+          sed -i 's/process\.exitCode = code/process.exitCode = 1/g' $CORDOVA_JS
+          echo "=== After patch ==="
+          sed -n '25,40p' $CORDOVA_JS
 
       - name: Generate app icons and splash
         run: |
