@@ -65,7 +65,7 @@
     <feature name="StatusBar">
         <param name="ios-package" onload="true" value="CDVStatusBar" />
     </feature>
-        <platform name="android">
+    <platform name="android">
         <!-- آیکون‌های اپلیکیشن -->
         <icon density="ldpi" src="resources/android/icon/drawable-ldpi-icon.png" />
         <icon density="mdpi" src="resources/android/icon/drawable-mdpi-icon.png" />
@@ -73,7 +73,7 @@
         <icon density="xhdpi" src="resources/android/icon/drawable-xhdpi-icon.png" />
         <icon density="xxhdpi" src="resources/android/icon/drawable-xxhdpi-icon.png" />
         <icon density="xxxhdpi" src="resources/android/icon/drawable-xxxhdpi-icon.png" />
-        
+
         <!-- آیکون‌های Adaptive (برای اندروید 8+) -->
         <icon density="ldpi" background="resources/android/icon/ldpi-background.png" foreground="resources/android/icon/ldpi-foreground.png" />
         <icon density="mdpi" background="resources/android/icon/mdpi-background.png" foreground="resources/android/icon/mdpi-foreground.png" />
@@ -96,12 +96,15 @@
         <splash density="port-xxhdpi" src="resources/android/splash/drawable-port-xxhdpi-screen.png" />
         <splash density="port-xxxhdpi" src="resources/android/splash/drawable-port-xxxhdpi-screen.png" />
 
-        <preference name="AndroidWindowSplashScreenAnimatedIcon" value="resources/android/android-splash.xml" />
+        <!-- تنظیمات Splash برای اندروید 12+ -->
         <preference name="AndroidWindowSplashScreenBackground" value="#FFFFFF" />
         <preference name="AndroidWindowSplashScreenIconBackgroundColor" value="#FFFFFF" />
+
+        <!-- فایل‌های Resource -->
         <resource-file src="google-services.json" target="app/google-services.json" />
         <resource-file src="resources/android/xml/network_security_config.xml" target="app/src/main/res/xml/network_security_config.xml" />
-        
+
+        <!-- تنظیمات Manifest -->
         <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
             <application android:allowBackup="false" android:largeHeap="true" android:networkSecurityConfig="@xml/network_security_config" android:usesCleartextTraffic="true" />
         </edit-config>
