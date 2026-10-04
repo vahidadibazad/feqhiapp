@@ -64,7 +64,8 @@ jobs:
       - name: Create Cordova resource XML files
         run: |
           VALUES_DIR="platforms/android/app/src/main/res/values"
-          mkdir -p "$VALUES_DIR"
+          DRAWABLE_DIR="platforms/android/app/src/main/res/drawable"
+          mkdir -p "$VALUES_DIR" "$DRAWABLE_DIR"
 
           # cdv_strings.xml
           cat > /tmp/cdv_strings.xml << 'XML_EOF'
@@ -82,18 +83,6 @@ jobs:
           sed -i 's/^          //' /tmp/cdv_strings.xml
           cp /tmp/cdv_strings.xml "$VALUES_DIR/cdv_strings.xml"
 
-          # cdv_themes.xml
-          cat > /tmp/cdv_themes.xml << 'XML_EOF'
-          <?xml version='1.0' encoding='utf-8'?>
-          <resources>
-              <style name="Theme.App.SplashScreen" parent="Theme.App">
-                  <item name="android:windowBackground">@android:color/white</item>
-              </style>
-          </resources>
-          XML_EOF
-          sed -i 's/^          //' /tmp/cdv_themes.xml
-          cp /tmp/cdv_themes.xml "$VALUES_DIR/cdv_themes.xml"
-
           # cdv_colors.xml
           cat > /tmp/cdv_colors.xml << 'XML_EOF'
           <?xml version='1.0' encoding='utf-8'?>
@@ -104,21 +93,41 @@ jobs:
           sed -i 's/^          //' /tmp/cdv_colors.xml
           cp /tmp/cdv_colors.xml "$VALUES_DIR/cdv_colors.xml"
 
+          # cdv_themes.xml with all required items
+          cat > /tmp/cdv_themes.xml << 'XML_EOF'
+          <?xml version='1.0' encoding='utf-8'?>
+          <resources>
+              <style name="Theme.App.SplashScreen" parent="Theme.AppCompat.Light.NoActionBar">
+                  <item name="windowSplashScreenBackground">@color/cdv_splashscreen_background</item>
+                  <item name="windowSplashScreenAnimatedIcon">@drawable/splash_placeholder</item>
+                  <item name="postSplashScreenTheme">@style/Theme.AppCompat.Light.NoActionBar</item>
+                  <item name="android:windowSplashScreenBackground">@color/cdv_splashscreen_background</item>
+                  <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_placeholder</item>
+              </style>
+          </resources>
+          XML_EOF
+          sed -i 's/^          //' /tmp/cdv_themes.xml
+          cp /tmp/cdv_themes.xml "$VALUES_DIR/cdv_themes.xml"
+
+          # Placeholder drawable for splash
+          cat > /tmp/splash_placeholder.xml << 'XML_EOF'
+          <?xml version='1.0' encoding='utf-8'?>
+          <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+              <solid android:color="#FFFFFF"/>
+          </shape>
+          XML_EOF
+          sed -i 's/^          //' /tmp/splash_placeholder.xml
+          cp /tmp/splash_placeholder.xml "$DRAWABLE_DIR/splash_placeholder.xml"
+
           echo "=== Created files ==="
           ls -la "$VALUES_DIR"
+          ls -la "$DRAWABLE_DIR"
           echo "=== cdv_themes.xml ==="
           cat "$VALUES_DIR/cdv_themes.xml"
 
       - name: Prepare Cordova platform
         run: |
           cordova prepare android --verbose
-
-      - name: Verify platform structure
-        run: |
-          echo "=== platform list ==="
-          cordova platform list
-          echo "=== values dir ==="
-          ls -la platforms/android/app/src/main/res/values/
 
       - name: Build APK (Debug)
         run: |
