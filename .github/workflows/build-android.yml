@@ -39,33 +39,62 @@ jobs:
           npm ci
           npm install -g cordova ionic
 
+      - name: Verify customized files exist
+        run: |
+          echo "=== src/assets/env.json ==="
+          head -20 src/assets/env.json
+          echo "=== src/assets/lang/ ==="
+          ls -la src/assets/lang/
+          test -f src/assets/env.json || (echo "ERROR: src/assets/env.json missing!" && exit 1)
+          test -f src/assets/lang/fa.json || (echo "WARNING: src/assets/lang/fa.json missing!")
+
       - name: Build Ionic app
         run: |
           npm run build
-          echo "=== Contents of www/ ==="
-          ls -la www/
-          echo "=== Checking cordova.js ==="
-          ls -la www/cordova.js || echo "cordova.js NOT FOUND"
-          echo "=== Checking env.json ==="
-          cat www/assets/env.json | head -40
-          echo "=== Checking lang files ==="
-          ls -la www/assets/lang/ || echo "lang folder missing"
+          echo "=== Top level of www/ ==="
+          ls -la www/ | head -20
 
-      - name: Force change default_lang to en
+      - name: Override env.json with customized values (CRITICAL)
         run: |
-          sed -i 's/"default_lang": "fa"/"default_lang": "en"/' www/assets/env.json
-          sed -i 's/"forcedefaultlanguage": true/"forcedefaultlanguage": false/' www/assets/env.json
-          echo "=== Updated env.json ==="
-          head -15 www/assets/env.json
+          node -e "
+            const fs = require('fs');
+            const env = JSON.parse(fs.readFileSync('src/assets/env.json', 'utf8'));
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            env.build = {
+              version: pkg.version,
+              isProduction: false,
+              isTesting: false,
+              isDevelopment: true,
+              lastCommitHash: process.env.GITHUB_SHA || 'local',
+              compilationTime: Date.now()
+            };
+            fs.writeFileSync('www/assets/env.json', JSON.stringify(env));
+            console.log('=== Overridden env.json ===');
+            console.log('app_id:', env.config.app_id);
+            console.log('appname:', env.config.appname);
+            console.log('sites:', JSON.stringify(env.config.sites));
+            console.log('onlyallowlistedsites:', env.config.onlyallowlistedsites);
+          "
+          echo "=== Verify override ==="
+          grep -o '\"app_id\":\"[^\"]*\"' www/assets/env.json
+
+      - name: Ensure lang files are present
+        run: |
+          mkdir -p www/assets/lang
+          cp -v src/assets/lang/*.json www/assets/lang/ 2>/dev/null || true
+          echo "=== lang files in www ==="
+          ls -la www/assets/lang/
 
       - name: Add Android platform
         run: |
           npx cordova platform add android
 
-      - name: Verify cordova.js in platform
+      - name: Verify overrides survived in platform
         run: |
-          ls -la platforms/android/app/src/main/assets/www/cordova.js || echo "cordova.js missing in platform"
-          ls -la platforms/android/app/src/main/assets/www/assets/lang/ || echo "lang folder missing in platform"
+          echo "=== env.json app_id in platform ==="
+          grep -o '\"app_id\":\"[^\"]*\"' platforms/android/app/src/main/assets/www/assets/env.json
+          echo "=== lang files in platform ==="
+          ls -la platforms/android/app/src/main/assets/www/assets/lang/
 
       - name: Build APK (Debug)
         run: |
