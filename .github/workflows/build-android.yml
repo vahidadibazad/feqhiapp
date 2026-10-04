@@ -36,19 +36,17 @@ jobs:
           npm ci
           npm install -g cordova ionic
 
-      - name: Build Ionic app
+      - name: Build Ionic app (production)
         run: |
-          npm run build --prod
+          npm run build
 
       - name: Add Android platform
         run: |
-          npx ionic cordova platform add android
+          npx cordova platform add android
 
       - name: Build APK (Debug)
         run: |
-          cd platforms/android
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          npx cordova build android --debug --no-telemetry
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
