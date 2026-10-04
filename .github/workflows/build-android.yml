@@ -37,7 +37,16 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm install -g cordova ionic cordova-res
+          npm install -g cordova@12.0.0 ionic cordova-res
+
+      - name: Debug Cordova setup
+        run: |
+          echo "=== Cordova version ==="
+          cordova --version
+          echo "=== node_modules/cordova-android ==="
+          ls -la node_modules/cordova-android/ 2>/dev/null | head -10 || echo "not found"
+          echo "=== package.json cordova section ==="
+          grep -A 5 '"cordova"' package.json || echo "no cordova section"
 
       - name: Generate app icons and splash
         run: |
@@ -47,9 +56,9 @@ jobs:
         run: |
           npm run build
 
-      - name: Add Android platform (no fetch)
+      - name: Add Android platform
         run: |
-          npx cordova platform add android --nosave --nofetch --verbose
+          npx cordova platform add android --nosave
 
       - name: Verify platform added
         run: |
@@ -58,7 +67,7 @@ jobs:
 
       - name: Build APK (Debug)
         run: |
-          npx cordova build android --debug --no-telemetry --nofetch
+          npx cordova build android --debug --no-telemetry
 
       - name: Get version
         id: version
