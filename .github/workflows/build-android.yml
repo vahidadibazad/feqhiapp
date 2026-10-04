@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build and Release Android APK
 
 on:
   push:
@@ -6,9 +6,12 @@ on:
       - my-branding
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-android:
-    name: Build Android APK
+    name: Build and Release Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -34,9 +37,13 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm install -g cordova ionic
+          npm install -g cordova ionic cordova-res
 
-      - name: Build Ionic app (production)
+      - name: Generate app icons and splash
+        run: |
+          cordova-res android --skip-config --copy || echo "cordova-res skipped"
+
+      - name: Build Ionic app
         run: |
           npm run build
 
@@ -48,9 +55,26 @@ jobs:
         run: |
           npx cordova build android --debug --no-telemetry
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: moodle-app-debug-apk
-          path: platforms/android/app/build/outputs/apk/debug/*.apk
-          retention-days: 30
+          files: platforms/android/app/build/outputs/apk/debug/*.apk
+          name: FeqhiApp v${{ steps.version.outputs.version }} (Build ${{ github.run_number }})
+          tag_name: v${{ steps.version.outputs.version }}-build${{ github.run_number }}
+          body: |
+            ## نسخه جدید فقهی‌اپ
+            - نسخه: ${{ steps.version.outputs.version }}
+            - شماره ساخت: ${{ github.run_number }}
+            
+            ### تغییرات
+            ${{ github.event.head_commit.message }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
