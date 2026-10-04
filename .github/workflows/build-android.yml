@@ -41,12 +41,16 @@ jobs:
 
       - name: Debug Cordova setup
         run: |
+          echo "=== Which cordova ==="
+          which cordova
           echo "=== Cordova version ==="
           cordova --version
           echo "=== node_modules/cordova-android ==="
-          ls -la node_modules/cordova-android/ 2>/dev/null | head -10 || echo "not found"
+          ls -la node_modules/cordova-android/ 2>/dev/null | head -5 || echo "not in node_modules"
           echo "=== package.json cordova section ==="
-          grep -A 5 '"cordova"' package.json || echo "no cordova section"
+          cat package.json | grep -A 10 '"cordova"'
+          echo "=== .cordova/config.json ==="
+          cat .cordova/config.json 2>/dev/null || echo "no .cordova/config.json"
 
       - name: Generate app icons and splash
         run: |
@@ -56,18 +60,18 @@ jobs:
         run: |
           npm run build
 
-      - name: Add Android platform
+      - name: Add Android platform (explicit package name)
         run: |
-          npx cordova platform add android --nosave
+          cordova platform add cordova-android@13.0.0 --nosave
 
       - name: Verify platform added
         run: |
-          npx cordova platform list
-          ls -la platforms/android/ | head -20
+          cordova platform list
+          ls -la platforms/ | head -10
 
       - name: Build APK (Debug)
         run: |
-          npx cordova build android --debug --no-telemetry
+          cordova build android --debug --no-telemetry
 
       - name: Get version
         id: version
