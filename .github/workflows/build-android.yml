@@ -47,10 +47,9 @@ jobs:
         run: |
           npm run build
 
-      - name: Install Cordova Android platform
+      - name: Add Android platform (no fetch)
         run: |
-          npm install cordova-android@latest --save-dev
-          npx cordova platform add android --nosave
+          npx cordova platform add android --nosave --nofetch --verbose
 
       - name: Verify platform added
         run: |
@@ -59,7 +58,7 @@ jobs:
 
       - name: Build APK (Debug)
         run: |
-          npx cordova build android --debug --no-telemetry
+          npx cordova build android --debug --no-telemetry --nofetch
 
       - name: Get version
         id: version
@@ -77,9 +76,6 @@ jobs:
             ## نسخه جدید فقهی‌اپ
             - نسخه: ${{ steps.version.outputs.version }}
             - شماره ساخت: ${{ github.run_number }}
-            
-            ### تغییرات
-            ${{ github.event.head_commit.message }}
           draft: false
           prerelease: false
         env:
