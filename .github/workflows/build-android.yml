@@ -42,12 +42,24 @@ jobs:
       - name: Build Ionic app
         run: |
           npm run build
+          echo "=== Contents of www/ after build ==="
+          ls -la www/
+          echo "=== Contents of www/assets/ ==="
+          ls -la www/assets/ || echo "assets folder missing"
+          echo "=== Checking env.json ==="
+          head -30 www/assets/env.json
 
-      - name: Copy custom env.json to www
+      - name: Ensure env.json has default_lang=en
         run: |
-          cp src/assets/env.json www/assets/env.json
-          echo "=== Custom env.json applied ==="
-          head -20 www/assets/env.json
+          # تغییر default_lang به en برای جلوگیری از خطای fa.json
+          sed -i 's/"default_lang": "fa"/"default_lang": "en"/' www/assets/env.json
+          sed -i 's/"forcedefaultlanguage": true/"forcedefaultlanguage": false/' www/assets/env.json
+          echo "=== Final env.json ==="
+          head -30 www/assets/env.json
+
+      - name: Verify cordova.js exists
+        run: |
+          ls -la www/cordova.js || echo "WARNING: cordova.js missing!"
 
       - name: Add Android platform
         run: |
