@@ -32,6 +32,13 @@ import { RouteReuseStrategy } from '@angular/router';
 import { coreInterceptorFn } from '@classes/interceptor';
 import { MoodleTranslateLoader } from '@services/lang-loader';
 
+window.addEventListener('error', (event) => {
+  console.error('GLOBAL ERROR:', event.error, event.message, event.filename, event.lineno);
+});
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('UNHANDLED PROMISE:', event.reason);
+});
+
 if (CoreConstants.BUILD.isProduction) {
     enableProdMode();
 }
