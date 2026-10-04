@@ -39,22 +39,21 @@ jobs:
           npm ci
           npm install -g cordova@12.0.0 ionic cordova-res
 
-      - name: Patch Cordova for Node 24 compatibility
+      - name: Patch Cordova CLI for Node 24
         run: |
-          CORDOVA_BIN=$(which cordova)
-          echo "Cordova bin path: $CORDOVA_BIN"
-          CORDOVA_JS=$(dirname $(readlink -f $CORDOVA_BIN))/../lib/node_modules/cordova/bin/cordova
-          echo "Cordova JS path: $CORDOVA_JS"
-          ls -la $CORDOVA_JS
-          # نمایش خطوط مشکل‌دار
-          sed -n '25,40p' $CORDOVA_JS
-          # پچ: تبدیل process.exitCode = err.code به process.exitCode = 1
-          sed -i 's/process\.exitCode = err\.code/process.exitCode = 1/g' $CORDOVA_JS
-          # پچ جایگزین برای الگوهای دیگر
-          sed -i 's/process\.exitCode = error\.code/process.exitCode = 1/g' $CORDOVA_JS
-          sed -i 's/process\.exitCode = code/process.exitCode = 1/g' $CORDOVA_JS
-          echo "=== After patch ==="
-          sed -n '25,40p' $CORDOVA_JS
+          CORDOVA_JS="$(npm root -g)/cordova/bin/cordova"
+          echo "Patching file: $CORDOVA_JS"
+          if [ ! -f "$CORDOVA_JS" ]; then
+            echo "ERROR: Cordova bin file not found!"
+            find / -name "cordova" -path "*/bin/cordova" 2>/dev/null | head -5
+            exit 1
+          fi
+          echo "--- BEFORE ---"
+          grep -n "exitCode" "$CORDOVA_JS"
+          sed -i "s|process\.exitCode = err\.code|process.exitCode = 1|g" "$CORDOVA_JS"
+          sed -i "s|process\.exitCode = error\.code|process.exitCode = 1|g" "$CORDOVA_JS"
+          echo "--- AFTER ---"
+          grep -n "exitCode" "$CORDOVA_JS"
 
       - name: Generate app icons and splash
         run: |
@@ -67,11 +66,6 @@ jobs:
       - name: Add Android platform
         run: |
           cordova platform add cordova-android@13.0.0 --nosave
-
-      - name: Verify platform added
-        run: |
-          cordova platform list
-          ls -la platforms/android/ | head -10
 
       - name: Build APK (Debug)
         run: |
