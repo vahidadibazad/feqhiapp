@@ -1,4 +1,4 @@
-name: Build APK
+name: Build and Release Android APK
 
 on:
   push:
@@ -10,51 +10,74 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-android:
+    name: Build and Release Android APK
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Setup Node
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+          cache: 'npm'
 
-      - name: Setup Java
+      - name: Setup Java JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install
+      - name: Accept Android SDK licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Install dependencies
         run: |
           npm ci
-          npm install -g cordova@12.0.0 @ionic/cli
+          npm install -g cordova ionic cordova-res
 
-      - name: Patch Cordova for Node 24
+      - name: Generate app icons and splash
         run: |
-          CORDOVA_JS="$(npm root -g)/cordova/bin/cordova"
-          sed -i "s|process\.exitCode = err\.code|process.exitCode = 1|g" "$CORDOVA_JS" || true
+          cordova-res android --skip-config --copy || echo "cordova-res skipped"
 
-      - name: Build web
-        run: npm run build
-
-      - name: Add platform via Ionic
+      - name: Build Ionic app
         run: |
-          npx ionic cordova platform add android --no-save
+          npm run build
 
-      - name: Build via Ionic
+      - name: Copy custom env.json to www
         run: |
-          npx ionic cordova build android --debug --no-telemetry
+          cp src/assets/env.json www/assets/env.json
+          echo "=== Custom env.json applied ==="
+          cat www/assets/env.json | head -20
 
-      - name: Find APK
-        run: find . -name "*.apk" -type f
+      - name: Add Android platform
+        run: |
+          npx cordova platform add android
 
-      - name: Release
+      - name: Build APK (Debug)
+        run: |
+          npx cordova build android --debug --no-telemetry
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: platforms/android/app/build/outputs/apk/debug/*.apk
-          tag_name: build-${{ github.run_number }}
-          name: Build ${{ github.run_number }}
+          name: FeqhiApp v${{ steps.version.outputs.version }} (Build ${{ github.run_number }})
+          tag_name: v${{ steps.version.outputs.version }}-build${{ github.run_number }}
+          body: |
+            ## نسخه جدید فقهی‌اپ
+            - نسخه: ${{ steps.version.outputs.version }}
+            - شماره ساخت: ${{ github.run_number }}
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
