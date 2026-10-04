@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget android-versionCode="53000" id="ir.feghi.lmsapp" ios-CFBundleVersion="5.3.0.0" version="5.3.0" versionCode="53000" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>Feqhi-LMS</name>
-    <description>Feqhi-LMS official app</description>
+    <name>فقهی‌اپ</name>
+    <description>اپلیکیشن رسمی فقهی‌اپ</description>
     <author email="vahidadibazad@msn.com" href="icit.ir">ICIT Mobile team</author>
     <content src="index.html" />
     <access origin="*" />
@@ -12,7 +12,10 @@
     <allow-navigation href="cdvfile:*" />
     <allow-navigation href="content:*" />
     <allow-navigation href="data:*" />
-    <allow-navigation href="*" />
+    <allow-navigation href="http://2.180.39.20/*" />
+    <allow-navigation href="https://2.180.39.20/*" />
+    <allow-navigation href="http://localhost/*" />
+    <allow-navigation href="https://localhost/*" />
     <allow-intent href="*" />
     <allow-intent href="tel:*" />
     <allow-intent href="sms:*" />
@@ -37,15 +40,17 @@
     <preference name="AllowInlineMediaPlayback" value="true" />
     <preference name="LoadUrlTimeoutValue" value="60000" />
     <preference name="load-url-timeout" value="60000" />
-    <preference name="AutoHideSplashScreen" value="false" />
+    <preference name="AutoHideSplashScreen" value="true" />
+    <preference name="SplashScreenDelay" value="3000" />
+    <preference name="FadeSplashScreenDuration" value="500" />
     <preference name="android-minSdkVersion" value="24" />
-    <preference name="android-targetSdkVersion" value="37" />
+    <preference name="android-targetSdkVersion" value="34" />
     <preference name="AndroidPersistentFileLocation" value="Compatibility" />
-    <preference name="AndroidInsecureFileModeEnabled" value="false" />
+    <preference name="AndroidInsecureFileModeEnabled" value="true" />
     <preference name="CustomURLSchemePluginClearsAndroidIntent" value="true" />
     <preference name="deployment-target" value="15.0" />
     <preference name="iosPersistentFileLocation" value="Compatibility" />
-    <preference name="scheme" value="http" />
+    <preference name="scheme" value="https" />
     <preference name="iosScheme" value="feqhiappfs" />
     <preference name="WKWebViewOnly" value="true" />
     <preference name="WKFullScreenEnabled" value="true" />
@@ -55,6 +60,8 @@
     <preference name="StatusBarBackgroundColor" value="#FFFFFF" />
     <preference name="NavigationBarBackgroundColor" value="#FFFFFF" />
     <preference name="AndroidEdgeToEdge" value="true" />
+    <preference name="Debugging" value="true" />
+    <preference name="AndroidInsecureFileModeEnabled" value="true" />
     <feature name="StatusBar">
         <param name="ios-package" onload="true" value="CDVStatusBar" />
     </feature>
@@ -69,18 +76,21 @@
         <resource-file src="resources/android/icon/drawable-xhdpi-smallicon.png" target="app/src/main/res/mipmap-xhdpi/smallicon.png" />
         <resource-file src="resources/android/xml/network_security_config.xml" target="app/src/main/res/xml/network_security_config.xml" />
         <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
-            <application android:allowBackup="false" android:largeHeap="true" android:networkSecurityConfig="@xml/network_security_config" />
+            <application android:allowBackup="false" android:largeHeap="true" android:networkSecurityConfig="@xml/network_security_config" android:usesCleartextTraffic="true" />
         </edit-config>
         <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application/activity">
-            <activity android:enableOnBackInvokedCallback="false" />
+            <activity android:enableOnBackInvokedCallback="false" android:exported="true" />
         </edit-config>
         <config-file parent="/manifest/application" target="AndroidManifest.xml">
             <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
         </config-file>
         <config-file parent="/*" target="AndroidManifest.xml">
             <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
             <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
             <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
         </config-file>
     </platform>
     <platform name="ios">
@@ -91,6 +101,22 @@
         <edit-config file="*-Info.plist" mode="merge" target="NSPhotoLibraryUsageDescription">
             <string>We need photo library access to get pictures from there so you can use them for changing your profile picture, attach them in your tasks submission and share them with the teachers.</string>
         </edit-config>
+        <edit-config file="*-Info.plist" mode="merge" target="NSAppTransportSecurity">
+            <dict>
+                <key>NSAllowsArbitraryLoads</key>
+                <true />
+                <key>NSExceptionDomains</key>
+                <dict>
+                    <key>2.180.39.20</key>
+                    <dict>
+                        <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                        <true />
+                        <key>NSIncludesSubdomains</key>
+                        <true />
+                    </dict>
+                </dict>
+            </dict>
+        </edit-config>
         <edit-config file="*-Info.plist" mode="merge" target="UISupportsDocumentBrowser">
             <true />
         </edit-config>
@@ -100,6 +126,7 @@
         <edit-config file="*-Info.plist" mode="overwrite" target="CFBundleLocalizations">
             <array>
                 <string>en</string>
+                <string>fa</string>
             </array>
         </edit-config>
         <config-file parent="FIREBASE_ANALYTICS_COLLECTION_DEACTIVATED" target="*-Info.plist">
@@ -129,385 +156,6 @@
         </config-file>
         <config-file parent="ITSAppUsesNonExemptEncryption" target="*-Info.plist">
             <false />
-        </config-file>
-        <config-file parent="CFBundleDocumentTypes" target="*-Info.plist">
-            <array>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Unknown File</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.calendar-event</string>
-                        <string>public.database</string>
-                        <string>public.executable</string>
-                        <string>public.data</string>
-                        <string>public.content </string>
-                        <string>public.item</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Video</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.video</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Image</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.image</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Web Archive</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.apple.webarchive</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>iWork Keynote</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.apple.keynote.key</string>
-                        <string>com.apple.iwork.keynote.key</string>
-                        <string>com.apple.iwork.keynote.kth</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>iWork Numbers</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.apple.numbers.numbers</string>
-                        <string>com.apple.iwork.numbers.numbers</string>
-                        <string>com.apple.iwork.numbers.template</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>iWork Pages</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.apple.page.pages</string>
-                        <string>com.apple.iwork.pages.pages</string>
-                        <string>com.apple.iwork.pages.template</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>OpenDocument Spreadsheet</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>org.oasis.opendocument.spreadsheet</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>OpenDocument Presentation</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>org.oasis.opendocument.presentation</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>OpenDocument Text</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>org.oasis.opendocument.text</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Folder</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.folder</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Audio</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.audio</string>
-                        <string>public.mp3</string>
-                        <string>public.mpeg-4-audio</string>
-                        <string>com.apple.protected-​mpeg-4-audio</string>
-                        <string>public.aifc-audio</string>
-                        <string>com.apple.coreaudio-​format</string>
-                        <string>public.aiff-audio</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Movie</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.movie</string>
-                        <string>public.3gpp2</string>
-                        <string>public.3gpp</string>
-                        <string>public.mpeg</string>
-                        <string>com.apple.quicktime-movie</string>
-                        <string>public.mpeg-4</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>GIF image</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.compuserve.gif</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>PNG image</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.png</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>TIFF image</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.tiff</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>JPEG image</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.jpeg</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>XML</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.xml</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>HTML</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.html</string>
-                        <string>public.xhtml</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Rich Text</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.rtf</string>
-                        <string>com.apple.rtfd</string>
-                        <string>com.apple.flat-rtfd</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Text</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.text</string>
-                        <string>public.plain-text</string>
-                        <string>public.utf8-plain-text</string>
-                        <string>public.utf16-external-plain-​text</string>
-                        <string>public.utf16-plain-text</string>
-                        <string>com.apple.traditional-mac-​plain-text</string>
-                        <string>public.source-code</string>
-                        <string>public.c-source</string>
-                        <string>public.objective-c-source</string>
-                        <string>public.c-plus-plus-source</string>
-                        <string>public.objective-c-plus-​plus-source</string>
-                        <string>public.c-header</string>
-                        <string>public.c-plus-plus-header</string>
-                        <string>com.sun.java-source</string>
-                        <string>public.script</string>
-                        <string>public.shell-script</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeExtensions</key>
-                    <array>
-                        <string>zip</string>
-                        <string>zipx</string>
-                    </array>
-                    <key>CFBundleTypeName</key>
-                    <string>Zip archive</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>public.zip-archive</string>
-                        <string>public.archive</string>
-                        <string>com.pkware.zip-archive</string>
-                        <string>com.pkware.zipx-archive</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeExtensions</key>
-                    <array>
-                        <string>rar</string>
-                        <string>RAR</string>
-                    </array>
-                    <key>CFBundleTypeName</key>
-                    <string>Rar archive</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.rarlab.rar-archive</string>
-                        <string>public.archive</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeExtensions</key>
-                    <array>
-                        <string>7z</string>
-                        <string>7Z</string>
-                    </array>
-                    <key>CFBundleTypeName</key>
-                    <string>7z archive</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>org.7-zip.7-zip-archive</string>
-                        <string>public.archive</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Waveform audio</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.microsoft.waveform-​audio</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Windows icon image</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.microsoft.ico</string>
-                        <string>com.apple.icns</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Windows bitmap image</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.microsoft.bmp</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Microsoft PowerPoint</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.microsoft.powerpoint.​ppt</string>
-                        <string>org.openxmlformats.presentationml.presentation</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Microsoft Excel</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>org.openxmlformats.spreadsheetml.sheet</string>
-                        <string>com.microsoft.excel.xls</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>Microsoft Word</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.microsoft.word.doc</string>
-                        <string>com.microsoft.word.wordml</string>
-                        <string>org.openxmlformats.wordprocessingml.document</string>
-                    </array>
-                </dict>
-                <dict>
-                    <key>CFBundleTypeName</key>
-                    <string>PDF</string>
-                    <key>LSHandlerRank</key>
-                    <string>Alternate</string>
-                    <key>LSItemContentTypes</key>
-                    <array>
-                        <string>com.adobe.pdf</string>
-                    </array>
-                </dict>
-            </array>
         </config-file>
     </platform>
 </widget>
