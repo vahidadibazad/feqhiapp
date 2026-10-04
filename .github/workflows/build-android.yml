@@ -42,11 +42,10 @@ jobs:
       - name: Patch Cordova CLI for Node 24
         run: |
           CORDOVA_JS="$(npm root -g)/cordova/bin/cordova"
-          echo "Patching file: $CORDOVA_JS"
+          echo "Patching: $CORDOVA_JS"
           sed -i "s|process\.exitCode = err\.code|process.exitCode = 1|g" "$CORDOVA_JS"
           sed -i "s|process\.exitCode = error\.code|process.exitCode = 1|g" "$CORDOVA_JS"
-          echo "--- Patched ---"
-          grep -n "exitCode" "$CORDOVA_JS" || echo "no exitCode lines found"
+          grep -n "exitCode" "$CORDOVA_JS" || true
 
       - name: Generate app icons and splash
         run: |
@@ -58,25 +57,25 @@ jobs:
 
       - name: Clean platforms directory
         run: |
-          rm -rf platforms/android plugins/android.json
-          echo "Platforms cleaned"
+          rm -rf platforms android plugins/android.json
+          echo "Cleaned"
 
-      - name: Add Android platform
+      - name: Add Android platform (full package name)
         run: |
-          cordova platform add android@13.0.0 --nosave
+          cordova platform add cordova-android@13.0.0 --nosave
 
       - name: Prepare Cordova platform
         run: |
           cordova prepare android --verbose
 
-      - name: Verify cdv_strings.xml exists
+      - name: Verify platform structure
         run: |
-          echo "=== Checking cdv_strings.xml ==="
-          find platforms/android -name "cdv_strings.xml" 2>/dev/null || echo "not found!"
-          echo "=== Platform structure ==="
-          ls -la platforms/android/app/src/main/res/values/ 2>/dev/null || echo "values dir missing"
-          echo "=== Platform list ==="
+          echo "=== platform list ==="
           cordova platform list
+          echo "=== cdv_strings.xml ==="
+          find platforms/android -name "cdv_strings.xml" 2>/dev/null || echo "not found"
+          echo "=== res/values dir ==="
+          ls -la platforms/android/app/src/main/res/values/ 2>/dev/null || echo "missing"
 
       - name: Build APK (Debug)
         run: |
