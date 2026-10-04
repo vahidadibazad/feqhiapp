@@ -61,10 +61,12 @@ jobs:
         run: |
           cordova platform add cordova-android@13.0.0 --nosave
 
-      - name: Create cdv_strings.xml with required strings
+      - name: Create Cordova resource XML files
         run: |
           VALUES_DIR="platforms/android/app/src/main/res/values"
           mkdir -p "$VALUES_DIR"
+
+          # cdv_strings.xml
           cat > /tmp/cdv_strings.xml << 'XML_EOF'
           <?xml version='1.0' encoding='utf-8'?>
           <resources>
@@ -79,8 +81,33 @@ jobs:
           XML_EOF
           sed -i 's/^          //' /tmp/cdv_strings.xml
           cp /tmp/cdv_strings.xml "$VALUES_DIR/cdv_strings.xml"
-          echo "=== Created cdv_strings.xml ==="
-          cat "$VALUES_DIR/cdv_strings.xml"
+
+          # cdv_themes.xml
+          cat > /tmp/cdv_themes.xml << 'XML_EOF'
+          <?xml version='1.0' encoding='utf-8'?>
+          <resources>
+              <style name="Theme.App.SplashScreen" parent="Theme.App">
+                  <item name="android:windowBackground">@android:color/white</item>
+              </style>
+          </resources>
+          XML_EOF
+          sed -i 's/^          //' /tmp/cdv_themes.xml
+          cp /tmp/cdv_themes.xml "$VALUES_DIR/cdv_themes.xml"
+
+          # cdv_colors.xml
+          cat > /tmp/cdv_colors.xml << 'XML_EOF'
+          <?xml version='1.0' encoding='utf-8'?>
+          <resources>
+              <color name="cdv_splashscreen_background">#FFFFFF</color>
+          </resources>
+          XML_EOF
+          sed -i 's/^          //' /tmp/cdv_colors.xml
+          cp /tmp/cdv_colors.xml "$VALUES_DIR/cdv_colors.xml"
+
+          echo "=== Created files ==="
+          ls -la "$VALUES_DIR"
+          echo "=== cdv_themes.xml ==="
+          cat "$VALUES_DIR/cdv_themes.xml"
 
       - name: Prepare Cordova platform
         run: |
