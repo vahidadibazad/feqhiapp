@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - my-branding
-  workflow_dispatch:  # امکان اجرای دستی از تب Actions
+  workflow_dispatch:
 
 jobs:
   build-android:
