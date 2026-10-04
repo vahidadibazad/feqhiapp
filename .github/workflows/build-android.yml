@@ -42,25 +42,30 @@ jobs:
       - name: Build Ionic app
         run: |
           npm run build
-          echo "=== Contents of www/ after build ==="
+          echo "=== Contents of www/ ==="
           ls -la www/
-          echo "=== Contents of www/assets/ ==="
-          ls -la www/assets/ || echo "assets folder missing"
+          echo "=== Checking cordova.js ==="
+          ls -la www/cordova.js || echo "cordova.js NOT FOUND"
+          echo "=== Checking env.json ==="
+          cat www/assets/env.json | head -40
+          echo "=== Checking lang files ==="
+          ls -la www/assets/lang/ || echo "lang folder missing"
 
-      - name: Ensure env.json has default_lang=en
+      - name: Force change default_lang to en
         run: |
           sed -i 's/"default_lang": "fa"/"default_lang": "en"/' www/assets/env.json
           sed -i 's/"forcedefaultlanguage": true/"forcedefaultlanguage": false/' www/assets/env.json
-          echo "=== Final env.json ==="
-          head -30 www/assets/env.json
-
-      - name: Verify cordova.js exists
-        run: |
-          ls -la www/cordova.js || echo "WARNING: cordova.js missing!"
+          echo "=== Updated env.json ==="
+          head -15 www/assets/env.json
 
       - name: Add Android platform
         run: |
           npx cordova platform add android
+
+      - name: Verify cordova.js in platform
+        run: |
+          ls -la platforms/android/app/src/main/assets/www/cordova.js || echo "cordova.js missing in platform"
+          ls -la platforms/android/app/src/main/assets/www/assets/lang/ || echo "lang folder missing in platform"
 
       - name: Build APK (Debug)
         run: |
