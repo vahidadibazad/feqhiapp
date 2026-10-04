@@ -42,7 +42,6 @@ jobs:
       - name: Patch Cordova CLI for Node 24
         run: |
           CORDOVA_JS="$(npm root -g)/cordova/bin/cordova"
-          echo "Patching: $CORDOVA_JS"
           sed -i "s|process\.exitCode = err\.code|process.exitCode = 1|g" "$CORDOVA_JS"
           sed -i "s|process\.exitCode = error\.code|process.exitCode = 1|g" "$CORDOVA_JS"
 
@@ -57,21 +56,30 @@ jobs:
       - name: Clean platforms directory
         run: |
           rm -rf platforms android plugins/android.json
-          echo "Cleaned"
 
       - name: Add Android platform
         run: |
-          cordova platform add cordova-android@12.0.0 --nosave
+          cordova platform add cordova-android@13.0.0 --nosave
 
-      - name: Ensure cdv_strings.xml exists
+      - name: Create cdv_strings.xml with required strings
         run: |
           VALUES_DIR="platforms/android/app/src/main/res/values"
           mkdir -p "$VALUES_DIR"
-          if [ ! -f "$VALUES_DIR/cdv_strings.xml" ]; then
-            echo "Creating cdv_strings.xml manually..."
-            printf "<?xml version='1.0' encoding='utf-8'?>\n<resources>\n</resources>\n" > "$VALUES_DIR/cdv_strings.xml"
-          fi
-          echo "=== cdv_strings.xml ==="
+          cat > /tmp/cdv_strings.xml << 'XML_EOF'
+          <?xml version='1.0' encoding='utf-8'?>
+          <resources>
+              <string name="app_name">فقهی‌اپ</string>
+              <string name="launch_activity">MainActivity</string>
+              <string name="menu_settings">Settings</string>
+              <string name="cdv_battery_usage">Battery usage</string>
+              <string name="cdv_battery_open_settings">Open Settings</string>
+              <string name="cdv_battery_ok">OK</string>
+              <string name="cdv_battery_cancel">Cancel</string>
+          </resources>
+          XML_EOF
+          sed -i 's/^          //' /tmp/cdv_strings.xml
+          cp /tmp/cdv_strings.xml "$VALUES_DIR/cdv_strings.xml"
+          echo "=== Created cdv_strings.xml ==="
           cat "$VALUES_DIR/cdv_strings.xml"
 
       - name: Prepare Cordova platform
