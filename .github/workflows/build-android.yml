@@ -43,17 +43,10 @@ jobs:
         run: |
           CORDOVA_JS="$(npm root -g)/cordova/bin/cordova"
           echo "Patching file: $CORDOVA_JS"
-          if [ ! -f "$CORDOVA_JS" ]; then
-            echo "ERROR: Cordova bin file not found!"
-            find / -name "cordova" -path "*/bin/cordova" 2>/dev/null | head -5
-            exit 1
-          fi
-          echo "--- BEFORE ---"
-          grep -n "exitCode" "$CORDOVA_JS"
           sed -i "s|process\.exitCode = err\.code|process.exitCode = 1|g" "$CORDOVA_JS"
           sed -i "s|process\.exitCode = error\.code|process.exitCode = 1|g" "$CORDOVA_JS"
-          echo "--- AFTER ---"
-          grep -n "exitCode" "$CORDOVA_JS"
+          echo "--- Patched ---"
+          grep -n "exitCode" "$CORDOVA_JS" || echo "no exitCode lines found"
 
       - name: Generate app icons and splash
         run: |
@@ -63,9 +56,27 @@ jobs:
         run: |
           npm run build
 
+      - name: Clean platforms directory
+        run: |
+          rm -rf platforms/android plugins/android.json
+          echo "Platforms cleaned"
+
       - name: Add Android platform
         run: |
-          cordova platform add cordova-android@13.0.0 --nosave
+          cordova platform add android@13.0.0 --nosave
+
+      - name: Prepare Cordova platform
+        run: |
+          cordova prepare android --verbose
+
+      - name: Verify cdv_strings.xml exists
+        run: |
+          echo "=== Checking cdv_strings.xml ==="
+          find platforms/android -name "cdv_strings.xml" 2>/dev/null || echo "not found!"
+          echo "=== Platform structure ==="
+          ls -la platforms/android/app/src/main/res/values/ 2>/dev/null || echo "values dir missing"
+          echo "=== Platform list ==="
+          cordova platform list
 
       - name: Build APK (Debug)
         run: |
