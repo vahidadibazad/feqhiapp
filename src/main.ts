@@ -32,12 +32,61 @@ import { RouteReuseStrategy } from '@angular/router';
 import { coreInterceptorFn } from '@classes/interceptor';
 import { MoodleTranslateLoader } from '@services/lang-loader';
 
+// ===== FEGHI DEBUG HOOKS - START =====
+/**
+ *
+ * @param value
+ */
+function safeStringify(value: unknown): string {
+    if (value === null) {
+        return 'null';
+    }
+    if (value === undefined) {
+        return 'undefined';
+    }
+    if (typeof value === 'string') {
+        return value;
+    }
+    if (value instanceof Error) {
+        return `[${value.name}] ${value.message}\n${value.stack ?? '(no stack)'}`;
+    }
+    try {
+        return JSON.stringify(value);
+    } catch {
+        return String(value);
+    }
+}
+
 window.addEventListener('error', (event) => {
-  console.error('GLOBAL ERROR:', event.error, event.message, event.filename, event.lineno);
+    // eslint-disable-next-line no-console
+    console.error(
+        '###FEGHI### WINDOW_ERROR | ' + safeStringify({
+            message: event.message,
+            filename: event.filename,
+            line: event.lineno,
+            col: event.colno,
+            error: event.error instanceof Error ? {
+                name: event.error.name,
+                message: event.error.message,
+                stack: event.error.stack,
+            } : String(event.error),
+        }),
+    );
 });
+
 window.addEventListener('unhandledrejection', (event) => {
-  console.error('UNHANDLED PROMISE:', event.reason);
+    // eslint-disable-next-line no-console
+    console.error(
+        '###FEGHI### UNHANDLED_REJECTION | ' + safeStringify(
+            event.reason instanceof Error ? {
+                name: event.reason.name,
+                message: event.reason.message,
+                stack: event.reason.stack,
+            } : event.reason,
+        ),
+    );
 });
+// ===== FEGHI DEBUG HOOKS - END =====
 
 if (CoreConstants.BUILD.isProduction) {
     enableProdMode();
@@ -51,7 +100,7 @@ bootstrapApplication(AppComponent, {
                 navAnimation: moodleTransitionAnimation,
                 innerHTMLTemplatesEnabled: true,
                 sanitizerEnabled: true,
-                useSetInputAPI: true,
+                useSetInputAPI: false,
             }),
             AppRoutingModule,
             CoreModule,
@@ -72,5 +121,5 @@ bootstrapApplication(AppComponent, {
     ],
 }).catch(err => {
     // eslint-disable-next-line no-console
-    console.log(err);
+    console.error('###FEGHI### BOOTSTRAP_ERROR | ' + safeStringify(err));
 });
